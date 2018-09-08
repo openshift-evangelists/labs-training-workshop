@@ -22,6 +22,19 @@
             "name": "OC_VERSION",
             "value": "3.10.41",
             "required": true
+        },
+        {
+            "name": "KUBECTL_VERSION",
+            "value": "1.10.0",
+            "required": true
+        },
+        {
+            "name": "TERMINAL_USER",
+            "value": ""
+        },
+        {
+            "name": "TERMINAL_PASS",
+            "value": ""
         }
     ],
     "objects": [
@@ -58,7 +71,7 @@
             "kind": "ImageStream",
             "apiVersion": "v1",
             "metadata": {
-                "name": "${APPLICATION_NAME}-s2i",
+                "name": "${APPLICATION_NAME}-base",
                 "labels": {
                     "app": "${APPLICATION_NAME}"
                 }
@@ -68,7 +81,7 @@
             "kind": "BuildConfig",
             "apiVersion": "v1",
             "metadata": {
-                "name": "${APPLICATION_NAME}-s2i",
+                "name": "${APPLICATION_NAME}-base",
                 "labels": {
                     "app": "${APPLICATION_NAME}"
                 }
@@ -99,6 +112,10 @@
                             {
                                 "name": "OC_VERSION",
                                 "value": "${OC_VERSION}"
+                            },
+                            {
+                                "name": "KUBECTL_VERSION",
+                                "value": "${KUBECTL_VERSION}"
                             }
                         ]
                     }
@@ -106,7 +123,7 @@
                 "output": {
                     "to": {
                         "kind": "ImageStreamTag",
-                        "name": "${APPLICATION_NAME}-s2i:latest"
+                        "name": "${APPLICATION_NAME}-base:latest"
                     }
                 }
             }
@@ -115,7 +132,7 @@
             "kind": "ImageStream",
             "apiVersion": "v1",
             "metadata": {
-                "name": "${APPLICATION_NAME}-img",
+                "name": "${APPLICATION_NAME}-labs",
                 "labels": {
                     "app": "${APPLICATION_NAME}"
                 }
@@ -125,7 +142,7 @@
             "kind": "BuildConfig",
             "apiVersion": "v1",
             "metadata": {
-                "name": "${APPLICATION_NAME}-img",
+                "name": "${APPLICATION_NAME}-labs",
                 "labels": {
                     "app": "${APPLICATION_NAME}"
                 }
@@ -142,7 +159,7 @@
                 "source": {
                     "type": "Git",
                     "git": {
-                        "uri": "https://github.com/openshift-evangelists/lab-training-workshop.git"
+                        "uri": "https://github.com/openshift-evangelists/labs-training-workshop.git"
                     }
                 },
                 "strategy": {
@@ -150,14 +167,14 @@
                     "sourceStrategy": {
                         "from": {
                             "kind": "ImageStreamTag",
-                            "name": "${APPLICATION_NAME}-s2i:latest"
+                            "name": "${APPLICATION_NAME}-base:latest"
                         }
                     }
                 },
                 "output": {
                     "to": {
                         "kind": "ImageStreamTag",
-                        "name": "${APPLICATION_NAME}-img:latest"
+                        "name": "${APPLICATION_NAME}-labs:latest"
                     }
                 }
             }
@@ -188,7 +205,7 @@
                             ],
                             "from": {
                                 "kind": "ImageStreamTag",
-                                "name": "${APPLICATION_NAME}-img:latest"
+                                "name": "${APPLICATION_NAME}-labs:latest"
                             }
                         }
                     }
@@ -210,11 +227,21 @@
                         "containers": [
                             {
                                 "name": "workshop",
-                                "image": "${APPLICATION_NAME}-img:latest",
+                                "image": "${APPLICATION_NAME}-labs:latest",
                                 "ports": [
                                     {
                                         "containerPort": 8080,
                                         "protocol": "TCP"
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "TERMINAL_USER",
+                                        "value": "${TERMINAL_USER}"
+                                    },
+                                    {
+                                        "name": "TERMINAL_PASS",
+                                        "value": "${TERMINAL_PASS}"
                                     }
                                 ]
                             }
